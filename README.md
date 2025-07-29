@@ -6,7 +6,7 @@ An interactive Question Answering app that allows users to upload a PDF and ask 
 
 ##  Features
 
-- Upload a PDF and ask questions about it
+- Upload a PDF and ask questions about it 
 - Semantic search using FAISS vector store
 - Uses Hugging Face embeddings for document understanding
 - Powered by LangChain for retrieval-augmented generation (RAG)
