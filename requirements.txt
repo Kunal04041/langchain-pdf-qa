@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+python-multipart
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-openai>=0.3.0
+langchain-text-splitters
+langchain-huggingface
+faiss-cpu
+sentence-transformers
+pypdf
+python-dotenv
+streamlit
+huggingface_hub
+groq
+cryptography

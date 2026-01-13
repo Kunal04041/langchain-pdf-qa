@@ -1,52 +1,116 @@
 import streamlit as st
-from langchain.vectorstores import FAISS
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.docstore.document import Document
-from transformers import pipeline
-from langchain.llms import HuggingFacePipeline
-from langchain.chains import RetrievalQA
-from pypdf import PdfReader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from src.core.pdf_processor import PDFProcessor
+from src.core.vector_store import VectorStoreManager
+from src.core.llm import LLMService
+import os
 
-st.title("PDF Document QA")
+# --- PAGE CONFIG ---
+st.set_page_config(
+    page_title="InsightPDF Pro",
+    page_icon="📄",
+    layout="wide"
+)
 
-uploaded_file = st.file_uploader("Upload your PDF", type=["pdf"])
+# --- CUSTOM CSS ---
+st.markdown("""
+<style>
+    .stApp {
+        background-color: #0F172A;
+        color: #F8FAFC;
+    }
+    .main-header {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #38BDF8;
+        margin-bottom: 0.5rem;
+    }
+    .sub-header {
+        font-size: 1.1rem;
+        color: #94A3B8;
+        margin-bottom: 2rem;
+    }
+    .stButton>button {
+        background-color: #38BDF8;
+        color: #0F172A;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+    .status-box {
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: #1E293B;
+        border: 1px solid #334155;
+    }
+</style>
+""", unsafe_allow_html=True)
 
-if uploaded_file is not None:
-    # Read PDF content
-    pdf_reader = PdfReader(uploaded_file)
-    text = ""
-    for page in pdf_reader.pages:
-        text += page.extract_text() or ""
+# --- INITIALIZATION ---
+if "processor" not in st.session_state:
+    st.session_state.processor = PDFProcessor()
+if "vector_store" not in st.session_state:
+    st.session_state.vector_store = VectorStoreManager()
+if "llm" not in st.session_state:
+    st.session_state.llm = LLMService()
+if "indexed" not in st.session_state:
+    st.session_state.indexed = False
 
-    # Split text into chunks
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
-    chunks = splitter.split_text(text)
+# --- UI LAYOUT ---
+st.markdown('<h1 class="main-header">InsightPDF Pro</h1>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Professional Document Intelligence & Analysis</p>', unsafe_allow_html=True)
 
-    # Create documents for vectorstore
-    documents = [Document(page_content=chunk) for chunk in chunks]
+with st.sidebar:
+    st.title("Settings")
+    st.divider()
+    uploaded_file = st.file_uploader("Upload Document (PDF)", type=["pdf"])
+    
+    if uploaded_file:
+        if st.button("Upload PDF"):
+            with st.spinner("Analyzing and indexing document..."):
+                docs = st.session_state.processor.process_pdf(uploaded_file)
+                st.session_state.vector_store.create_store(docs)
+                st.session_state.indexed = True
+                st.success(f"Indexed {len(docs)} chunks.")
 
-    # Create embeddings and vectorstore dynamically
-    embedding_model = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectorstore = FAISS.from_documents(documents, embedding_model)
+    st.divider()
+    if st.session_state.indexed:
+        st.info("✅ Document ready for analysis")
+    else:
+        st.warning("⚠️ No document indexed")
 
-    # Set up the LLM and QA chain
-    generator = pipeline(
-        "text2text-generation",
-        model="google/flan-t5-base",
-        max_length=256,
-        do_sample=False,
-    )
-    llm = HuggingFacePipeline(pipeline=generator)
-    qa_chain = RetrievalQA.from_chain_type(llm=llm, retriever=vectorstore.as_retriever())
+# --- MAIN CONTENT ---
+if not st.session_state.indexed:
+    st.info("Please upload and index a PDF from the sidebar to begin your research.")
+else:
+    query = st.chat_input("Ask anything about the document...")
+    
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
 
-    query = st.text_input("Ask a question about your PDF:")
+    # Display chat history
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
 
     if query:
-        with st.spinner("Thinking..."):
-            answer = qa_chain.run(query)
-        st.write("**Answer:**")
-        st.write(answer)
+        # User message
+        st.session_state.messages.append({"role": "user", "content": query})
+        with st.chat_message("user"):
+            st.markdown(query)
 
-else:
-    st.info("Please upload a PDF file to start.")
+        # Assistant message
+        with st.chat_message("assistant"):
+            with st.spinner("Searching document..."):
+                # Search
+                docs = st.session_state.vector_store.similarity_search(query)
+                context = "\n---\n".join([d.page_content for d in docs])
+                
+                # Answer
+                answer = st.session_state.llm.get_answer(context, query)
+                st.markdown(answer)
+                
+                with st.expander("View Sources"):
+                    for i, doc in enumerate(docs):
+                        st.markdown(f"**Source {i+1}**")
+                        st.caption(doc.page_content)
+
+        st.session_state.messages.append({"role": "assistant", "content": answer})

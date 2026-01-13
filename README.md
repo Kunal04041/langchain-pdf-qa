@@ -1,25 +1,84 @@
-# PDF Q&A Bot using LangChain, FAISS, Hugging Face & Streamlit
+# InsightPDF Pro: Professional Document Intelligence
 
-An interactive Question Answering app that allows users to upload a PDF and ask questions about its content. Powered by LangChain, Hugging Face Transformers, FAISS for retrieval, and Streamlit for the frontend UI.
-
----
-
-##  Features
-
-- Upload a PDF and ask questions about it 
-- Semantic search using FAISS vector store
-- Uses Hugging Face embeddings for document understanding
-- Powered by LangChain for retrieval-augmented generation (RAG)
-- User-friendly interface with Streamlit
+InsightPDF Pro is a modular, high-performance RAG (Retrieval-Augmented Generation) system designed for deep analysis of PDF documents. It combines local embedding intelligence with high-speed cloud inference to provide precise answers based on document context.
 
 ---
 
-##  Tech Stack
+## Project Overview
 
-- [LangChain](https://python.langchain.com/)
-- [Hugging Face Transformers](https://huggingface.co/)
-- [FAISS (Facebook AI Similarity Search)](https://github.com/facebookresearch/faiss)
-- [Streamlit](https://streamlit.io/)
-- Python 3.8+
+InsightPDF Pro provides a streamlined research experience:
 
+- Intelligent PDF Parsing: Extracts and segments PDF text into semantically meaningful chunks, even from encrypted documents.
+- Local Vector Search: Uses state-of-the-art sentence embeddings for ultra-fast, local retrieval without recurring API costs for embedding.
+- High-Speed Context Analysis: Leverages the Groq LPU platform for near-instantaneous, context-aware responses.
+- Professional UI: A dark-themed Streamlit interface optimized for focused research.
+- Modular Architecture: Clean separation between API endpoints, core processing logic, and the user interface.
 
+---
+
+## Technical Stack and Models
+
+### Text Generation (LLM)
+- Model: Llama 3.3 70B Versatile
+- Provider: Groq
+- Role: Acts as the primary reasoning engine that synthesizes retrieved document context into natural language answers.
+
+### Text Embeddings
+- Model: all-MiniLM-L6-v2
+- Library: HuggingFace (via Sentence-Transformers)
+- Role: Converts document chunks and user queries into high-dimensional vectors. This model runs locally on your machine, ensuring data privacy and zero cost.
+
+### Vector Storage
+- Library: FAISS (Facebook AI Similarity Search)
+- Role: An efficient local library for similarity search and clustering of dense vectors.
+
+### Deployment & Frameworks
+- UI: Streamlit
+- Backend API: FastAPI
+- PDF Processing: pypdf (with cryptography support for AES encryption)
+
+---
+
+## Role of LangChain
+
+LangChain is utilized as the orchestration layer to bridge document data with the AI models. Specifically, it handles:
+
+- Text Chunking: Using RecursiveCharacterTextSplitter to ensure text segments maintain semantic coherence while fitting model context windows.
+- Data Structuring: Utilizing the LangChain Document object to manage text content and associated metadata.
+- Vector Store Integration: Providing the wrapper for FAISS to handle document indexing and similarity-based retrieval.
+- Embedding Management: Standardizing the interface for the local HuggingFace embedding model.
+
+---
+
+## Setup Instructions
+
+### 1. Environment Setup
+```powershell
+python -m venv venv
+.\venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 2. Configuration
+Create a .env file in the project root or parent directory:
+```env
+GROQ_API_KEY=your_groq_api_key_here
+```
+
+### 3. Running the App
+
+#### Professional Research UI (Streamlit)
+```powershell
+streamlit run app.py
+```
+
+#### Programmatic API (FastAPI)
+```powershell
+uvicorn src.api.main:app --reload
+```
+
+---
+
+## Model Resilience
+
+The system includes error handling to suppress technical API logs. If the configured LLM provider is unavailable or rate-limited, the system provides professional fallback communication to the user instead of displaying raw JSON errors.

@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+.env
+*.pdf
+faiss_index/
+.ipynb_checkpoints/
+*.ipynb
