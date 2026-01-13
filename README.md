@@ -26,7 +26,15 @@ InsightPDF Pro provides a streamlined research experience:
 ### Text Embeddings
 - Model: all-MiniLM-L6-v2
 - Library: HuggingFace (via Sentence-Transformers)
+- Dimensions: 384
 - Role: Converts document chunks and user queries into high-dimensional vectors. This model runs locally on your machine, ensuring data privacy and zero cost.
+
+### RAG Strategy (Chunking & Retrieval)
+- Chunking Method: Recursive Character Splitting
+- Chunk Size: 1000 characters
+- Chunk Overlap: 100 characters
+- Search Algorithm: L2 Distance (FAISS)
+- Contextual Retrieval: Top 3 most relevant segments per query
 
 ### Vector Storage
 - Library: FAISS (Facebook AI Similarity Search)
