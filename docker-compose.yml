@@ -1,0 +1,10 @@
+services:
+  pdf-qna:
+    build: .
+    ports:
+      - "8502:8501" # Using 8502 to avoid conflict with the other app
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: always

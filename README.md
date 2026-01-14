@@ -87,6 +87,38 @@ uvicorn src.api.main:app --reload
 
 ---
 
+## Docker Setup
+
+If you prefer to run the application using Docker, follow these steps:
+
+### 1. Build the Docker Image
+```bash
+docker build -t pdf-qna .
+```
+
+### 2. Run the Container
+```bash
+docker run -p 8502:8501 pdf-qna
+```
+
+### 3. Using Docker Compose (Recommended)
+```bash
+docker-compose up --build
+```
+The application will be accessible at `http://localhost:8502`.
+
+> **Note:** We use port `8502` for this app to avoid conflict with other Streamlit apps (like TalentScout Pro) which typically use `8501`.
+
+### 4. Stopping & Cleaning Up
+
+*   **To stop:** Press `Ctrl + C` or run `docker-compose down`.
+*   **To reclaim disk space:**
+    ```powershell
+    docker system prune -a --volumes
+    ```
+
+---
+
 ## Model Resilience
 
 The system includes error handling to suppress technical API logs. If the configured LLM provider is unavailable or rate-limited, the system provides professional fallback communication to the user instead of displaying raw JSON errors.

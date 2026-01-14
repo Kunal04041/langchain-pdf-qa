@@ -2,8 +2,10 @@ import os
 from groq import Groq
 from dotenv import load_dotenv
 
-# Load .env from the root
-load_dotenv(os.path.join(os.path.dirname(__file__), "../../../../.env"))
+# Load .env - try current directory first, then legacy parent root
+load_dotenv() 
+if not os.getenv("GROQ_API_KEY"):
+    load_dotenv(os.path.join(os.path.dirname(__file__), "../../../../.env"))
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
